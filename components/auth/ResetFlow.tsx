@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { B } from "@/lib/constants";
 import { inp, lbl, errorBox, darkBtn } from "@/lib/styles";
@@ -31,7 +31,10 @@ export function ResetFlow() {
   const [busy, setBusy] = useState(false);
   const [resent, setResent] = useState(false);
 
-  const supabase = createClient();
+  // Create the client lazily on first use (never at render time), so the static
+  // prerender of this page at build never needs the Supabase env vars.
+  const supabaseRef = useRef<ReturnType<typeof createClient>>();
+  const supabase = () => (supabaseRef.current ??= createClient());
 
   // ── Step 1: email ──────────────────────────────────────────────────────────
   const sendCode = async () => {
@@ -39,13 +42,13 @@ export function ResetFlow() {
     setBusy(true);
     setError("");
     // Don't reveal whether the account exists — always advance.
-    await supabase.auth.resetPasswordForEmail(email.toLowerCase().trim());
+    await supabase().auth.resetPasswordForEmail(email.toLowerCase().trim());
     setBusy(false);
     setStep("code");
   };
 
   const resend = async () => {
-    await supabase.auth.resetPasswordForEmail(email.toLowerCase().trim());
+    await supabase().auth.resetPasswordForEmail(email.toLowerCase().trim());
     setResent(true);
     setCode("");
     setTimeout(() => setResent(false), 4000);
@@ -56,7 +59,7 @@ export function ResetFlow() {
     setError("");
     if (code.trim().length !== 6) return setError("Enter the 6-digit code.");
     setBusy(true);
-    const { error } = await supabase.auth.verifyOtp({
+    const { error } = await supabase().auth.verifyOtp({
       email: email.toLowerCase().trim(),
       token: code.trim(),
       type: "recovery",
@@ -87,7 +90,7 @@ export function ResetFlow() {
     if (pw.password.length < 6) return setError("Password needs at least 6 characters.");
     if (pw.password !== pw.confirm) return setError("Passwords don't match — try again.");
     setBusy(true);
-    const { error } = await supabase.auth.updateUser({ password: pw.password });
+    const { error } = await supabase().auth.updateUser({ password: pw.password });
     setBusy(false);
     if (error) return setError(error.message);
     setStep("done");
