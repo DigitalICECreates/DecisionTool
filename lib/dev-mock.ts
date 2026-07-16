@@ -54,7 +54,7 @@ export const mockDecisions: Decision[] = [
     pressure_level: 5,
     context_notes: "Went against the budget recommendation on safety grounds.",
     stakeholders: "Finance Director",
-    outcome: "partial",
+    outcome: "successful",
     reflection_notes: "Right call clinically; revisit the budget conversation next cycle.",
     created_at: "2026-06-28T11:15:00.000Z",
     updated_at: "2026-06-28T11:15:00.000Z",

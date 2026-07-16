@@ -23,7 +23,7 @@ export const B = {
 } as const;
 
 export type DecisionTypeId = "decision" | "non_decision" | "anti_decision";
-export type OutcomeId = "pending" | "successful" | "partial" | "unsuccessful";
+export type OutcomeId = "pending" | "successful" | "unsuccessful";
 
 export interface DecisionTypeDef {
   id: DecisionTypeId;
@@ -70,7 +70,6 @@ export interface OutcomeDef {
 export const OUTCOMES: OutcomeDef[] = [
   { id: "pending", label: "Pending", color: B.purple },
   { id: "successful", label: "Successful", color: B.green },
-  { id: "partial", label: "Partial", color: B.yellow },
   { id: "unsuccessful", label: "Unsuccessful", color: B.coral },
 ];
 

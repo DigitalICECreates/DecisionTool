@@ -11,7 +11,7 @@ export const decisionSchema = z.object({
   pressure: z.coerce.number().int().min(1).max(5).default(3),
   context: z.string().optional().default(""),
   stakeholders: z.string().optional().default(""),
-  outcome: z.enum(["pending", "successful", "partial", "unsuccessful"]).default("pending"),
+  outcome: z.enum(["pending", "successful", "unsuccessful"]).default("pending"),
   notes: z.string().optional().default(""),
 });
 

@@ -59,7 +59,7 @@ create table if not exists public.decisions (
   pressure_level      integer check (pressure_level between 1 and 5),
   context_notes       text,
   stakeholders        text,
-  outcome             text check (outcome in ('pending','successful','partial','unsuccessful'))
+  outcome             text check (outcome in ('pending','successful','unsuccessful'))
                       default 'pending' not null,
   reflection_notes    text,
   created_at          timestamptz default now() not null,
