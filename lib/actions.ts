@@ -4,12 +4,13 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { decisionSchema, profileNameSchema, type DecisionFormValues } from "@/lib/schema";
-import type { DecisionInsert } from "@/types/database";
+import type { Decision } from "@/types/database";
+import { DEV_BYPASS_AUTH, mockProfile, mockDecisions } from "@/lib/dev-mock";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
 // Map the form shape (prototype field names) -> database columns.
-function toRow(values: DecisionFormValues): Omit<DecisionInsert, "user_id"> {
+function toRow(values: DecisionFormValues): Omit<Decision, "id" | "user_id" | "created_at" | "updated_at"> {
   return {
     type: values.type,
     title: values.title.trim(),
@@ -26,6 +27,19 @@ function toRow(values: DecisionFormValues): Omit<DecisionInsert, "user_id"> {
 export async function createDecision(values: DecisionFormValues): Promise<ActionResult> {
   const parsed = decisionSchema.safeParse(values);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid entry." };
+
+  if (DEV_BYPASS_AUTH) {
+    const now = new Date().toISOString();
+    mockDecisions.unshift({
+      id: crypto.randomUUID(),
+      user_id: mockProfile.id,
+      ...toRow(parsed.data),
+      created_at: now,
+      updated_at: now,
+    });
+    revalidatePath("/dashboard");
+    return { ok: true };
+  }
 
   const supabase = createClient();
   const {
@@ -50,6 +64,15 @@ export async function updateDecision(
   const parsed = decisionSchema.safeParse(values);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid entry." };
 
+  if (DEV_BYPASS_AUTH) {
+    const existing = mockDecisions.find((d) => d.id === id);
+    if (!existing) return { ok: false, error: "Entry not found." };
+    Object.assign(existing, toRow(parsed.data), { updated_at: new Date().toISOString() });
+    revalidatePath("/dashboard");
+    revalidatePath(`/entry/${id}`);
+    return { ok: true };
+  }
+
   const supabase = createClient();
   const {
     data: { user },
@@ -71,6 +94,13 @@ export async function updateDecision(
 }
 
 export async function deleteDecision(id: string): Promise<ActionResult> {
+  if (DEV_BYPASS_AUTH) {
+    const index = mockDecisions.findIndex((d) => d.id === id);
+    if (index !== -1) mockDecisions.splice(index, 1);
+    revalidatePath("/dashboard");
+    return { ok: true };
+  }
+
   const supabase = createClient();
   const {
     data: { user },
@@ -87,6 +117,13 @@ export async function deleteDecision(id: string): Promise<ActionResult> {
 export async function updateProfileName(fullName: string): Promise<ActionResult> {
   const parsed = profileNameSchema.safeParse({ full_name: fullName });
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid name." };
+
+  if (DEV_BYPASS_AUTH) {
+    mockProfile.full_name = parsed.data.full_name;
+    revalidatePath("/dashboard");
+    revalidatePath("/profile");
+    return { ok: true };
+  }
 
   const supabase = createClient();
   const {

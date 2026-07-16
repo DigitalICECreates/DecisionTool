@@ -197,7 +197,7 @@ export function DecisionForm({
 
       {/* Outcome */}
       <div>
-        <SectionHead>Outcome</SectionHead>
+        <SectionHead>Decision Outcome</SectionHead>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px" }}>
           {OUTCOMES.map((o) => (
             <button

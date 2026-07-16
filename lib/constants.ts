@@ -34,9 +34,9 @@ export interface DecisionTypeDef {
 }
 
 export const DECISION_TYPES: DecisionTypeDef[] = [
-  { id: "decision", label: "Decision", sub: "A clear choice made", color: B.green, light: "#EDF8DC" },
-  { id: "non_decision", label: "Non-Decision", sub: "Deferred or avoided", color: B.blue, light: "#DDF3FC" },
-  { id: "anti_decision", label: "Anti-Decision", sub: "Counter to expectation", color: B.coral, light: "#FDEAEA" },
+  { id: "decision", label: "Decision agreed", sub: "A clear choice made", color: B.green, light: "#EDF8DC" },
+  { id: "non_decision", label: "Decision deferred / not reached", sub: "Deferred or avoided", color: B.blue, light: "#DDF3FC" },
+  { id: "anti_decision", label: "Alternative decision taken", sub: "Counter to expectation", color: B.coral, light: "#FDEAEA" },
 ];
 
 export const SETTINGS = [

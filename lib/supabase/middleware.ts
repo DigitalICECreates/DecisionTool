@@ -1,6 +1,7 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/types/database";
+import { DEV_BYPASS_AUTH } from "@/lib/dev-mock";
 
 type CookieToSet = { name: string; value: string; options?: CookieOptions };
 
@@ -19,6 +20,8 @@ function isPublic(pathname: string) {
  *  - authenticated users hitting an auth route   -> redirected to /dashboard
  */
 export async function updateSession(request: NextRequest) {
+  if (DEV_BYPASS_AUTH) return NextResponse.next({ request });
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient<Database>(

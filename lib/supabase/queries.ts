@@ -3,6 +3,7 @@ import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Decision } from "@/types/database";
 import type { DecisionTypeId } from "@/lib/constants";
+import { DEV_BYPASS_AUTH, mockProfile, mockDecisions } from "@/lib/dev-mock";
 
 export interface DashboardStats {
   total: number;
@@ -15,6 +16,8 @@ export interface DashboardStats {
 // ever get the current user's rows. Wrapped in React cache() so the layout and
 // page in the same request share a single round-trip.
 export const getDecisions = cache(async (): Promise<Decision[]> => {
+  if (DEV_BYPASS_AUTH) return mockDecisions;
+
   const supabase = createClient();
   const { data, error } = await supabase
     .from("decisions")
@@ -26,6 +29,8 @@ export const getDecisions = cache(async (): Promise<Decision[]> => {
 });
 
 export async function getDecision(id: string): Promise<Decision | null> {
+  if (DEV_BYPASS_AUTH) return mockDecisions.find((d) => d.id === id) ?? null;
+
   const supabase = createClient();
   const { data, error } = await supabase.from("decisions").select("*").eq("id", id).maybeSingle();
   if (error) throw error;
@@ -59,6 +64,8 @@ export function computeStats(decisions: Decision[]): DashboardStats {
 }
 
 export const getCurrentProfile = cache(async () => {
+  if (DEV_BYPASS_AUTH) return mockProfile;
+
   const supabase = createClient();
   const {
     data: { user },
