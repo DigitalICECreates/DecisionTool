@@ -54,8 +54,10 @@ export function LoginSignup({ initialMode = "login" }: { initialMode?: Mode }) {
 
       if (error) return setError(error.message);
       if (data.session) {
-        router.push("/dashboard");
-        router.refresh();
+        // Hard navigation: avoids racing a client-side push against a
+        // refresh, which could leave the address bar on /login while
+        // middleware quietly renders the dashboard underneath it.
+        window.location.href = "/dashboard";
       } else {
         // Email confirmation is enabled — user must verify first.
         setNotice("Account created. Check your email to confirm your address, then sign in.");
@@ -70,8 +72,8 @@ export function LoginSignup({ initialMode = "login" }: { initialMode?: Mode }) {
     const { error } = await supabase.auth.signInWithPassword({ email, password: form.password });
     setBusy(false);
     if (error) return setError("Email or password isn't right.");
-    router.push("/dashboard");
-    router.refresh();
+    // Hard navigation — see the comment in the signup branch above.
+    window.location.href = "/dashboard";
   };
 
   const onKey = (e: React.KeyboardEvent) => {

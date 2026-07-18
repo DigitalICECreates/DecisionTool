@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { B } from "@/lib/constants";
 import { inp } from "@/lib/styles";
 
@@ -122,12 +122,78 @@ function useVoice(onTranscript: (text: string) => void) {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-const OS_DICTATION_MESSAGE: Record<OS, string> = {
-  windows:
-    "This browser doesn't have a built-in mic button. Click into the field and press the Windows key + H to use Windows' own voice typing instead.",
-  mac: "This browser doesn't have a built-in mic button. Click into the field and press the Fn key twice to use your Mac's built-in dictation instead.",
-  other: "Speak-to-type isn't available in this browser — try Chrome, Edge, or Safari.",
+function Key({ children }: { children: ReactNode }) {
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        padding: "1px 7px",
+        margin: "0 2px",
+        borderRadius: "5px",
+        background: "rgba(255,255,255,0.15)",
+        border: "1px solid rgba(255,255,255,0.35)",
+        fontFamily: "ui-monospace, SFMono-Regular, monospace",
+        fontSize: "12px",
+        fontWeight: 700,
+        color: B.yellow,
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+
+const OS_DICTATION_CONTENT: Record<OS, ReactNode> = {
+  windows: (
+    <>
+      This browser doesn&apos;t have a built-in mic button. Click into the field, then press{" "}
+      <Key>Win</Key>+<Key>H</Key> to use Windows&apos; own voice typing.
+    </>
+  ),
+  mac: (
+    <>
+      This browser doesn&apos;t have a built-in mic button. Click into the field, then press{" "}
+      <Key>Fn</Key> twice to use your Mac&apos;s built-in dictation.
+    </>
+  ),
+  other: <>Speak-to-type isn&apos;t available in this browser — try Chrome, Edge, or Safari instead.</>,
 };
+
+function DictationTooltip({ content, top }: { content: ReactNode; top: string }) {
+  return (
+    <div
+      role="tooltip"
+      style={{
+        position: "absolute",
+        left: 0,
+        top,
+        zIndex: 20,
+        maxWidth: "300px",
+        background: B.dark,
+        color: B.white,
+        fontSize: "13px",
+        fontWeight: 500,
+        lineHeight: 1.6,
+        padding: "12px 16px",
+        borderRadius: "12px",
+        boxShadow: "0 16px 36px rgba(0,0,0,0.35)",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          top: "-6px",
+          left: "20px",
+          width: "12px",
+          height: "12px",
+          background: B.dark,
+          transform: "rotate(45deg)",
+        }}
+      />
+      {content}
+    </div>
+  );
+}
 
 function MicBtn({
   listening,
@@ -188,12 +254,15 @@ export function VoiceInput({
   type?: string;
 }) {
   const { listening, supported, checked, os, error, toggle } = useVoice(onChange);
+  const [focused, setFocused] = useState(false);
   return (
     <div style={{ position: "relative" }}>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
         placeholder={placeholder}
         style={{ ...inp, paddingRight: supported ? "48px" : "14px", ...extraStyle }}
       />
@@ -203,8 +272,8 @@ export function VoiceInput({
           {error}
         </div>
       )}
-      {checked && !supported && (
-        <div style={{ fontSize: "11px", color: B.muted, marginTop: "4px" }}>{OS_DICTATION_MESSAGE[os]}</div>
+      {checked && !supported && focused && (
+        <DictationTooltip content={OS_DICTATION_CONTENT[os]} top="calc(100% + 10px)" />
       )}
     </div>
   );
@@ -222,11 +291,14 @@ export function VoiceArea({
   height?: string;
 }) {
   const { listening, supported, checked, os, error, toggle } = useVoice(onChange);
+  const [focused, setFocused] = useState(false);
   return (
     <div style={{ position: "relative" }}>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
         placeholder={placeholder}
         style={{
           ...inp,
@@ -272,8 +344,8 @@ export function VoiceArea({
           {error}
         </div>
       )}
-      {checked && !supported && (
-        <div style={{ fontSize: "11px", color: B.muted, marginTop: "4px" }}>{OS_DICTATION_MESSAGE[os]}</div>
+      {checked && !supported && focused && (
+        <DictationTooltip content={OS_DICTATION_CONTENT[os]} top="calc(100% + 10px)" />
       )}
     </div>
   );

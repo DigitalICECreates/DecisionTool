@@ -208,7 +208,7 @@ export function ResetFlow() {
         <div style={{ fontSize: "13px", color: B.muted, marginBottom: "28px", lineHeight: 1.6 }}>
           Your password has been reset successfully. You're all set.
         </div>
-        <button onClick={() => { router.push("/dashboard"); router.refresh(); }} style={darkBtn}>
+        <button onClick={() => { window.location.href = "/dashboard"; }} style={darkBtn}>
           Continue to dashboard
         </button>
       </div>
